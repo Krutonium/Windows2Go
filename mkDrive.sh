@@ -77,27 +77,22 @@ parted -s "$drive_path" set 1 esp on
 echo "Creating Windows partition..."
 parted -s "$drive_path" mkpart Windows ntfs 129MiB 100%
 
-# Mount EFI to /tmp/mnt/efi
-# then wget https://github.com/maharmstone/quibble/releases/download/20230328/quibble-20230328.zip
-echo "Mounting EFI Partition"
-mkdir -p /tmp/mnt/efi
-mount "$drive_path"1 /tmp/mnt/efi
-echo "Installing Quibble Bootloader https://github.com/maharmstone/quibble"
-wget "https://github.com/maharmstone/quibble/releases/download/20230328/quibble-20230328.zip" -O /tmp/mnt/quibble.zip
-# Unpack it into /tmp/quibble/
-mkdir -p /tmp/quibble
-unzip /tmp/mnt/quibble.zip -d /tmp/quibble
-mkdir -p /tmp/mnt/efi/EFI/Boot/
-cp -rv /tmp/quibble/amd64/* /tmp/mnt/efi/EFI/Boot/
-mv /tmp/mnt/efi/EFI/Boot/quibble.efi /tmp/mnt/efi/EFI/Boot/bootx64.efi
-cp ./freeldr.ini /tmp/mnt/efi/EFI/Boot/freeldr.ini
-rm -rd /tmp/quibble
-umount /tmp/mnt/efi
-rm -rd /tmp/mnt
-
 # Now lets get Windows done up
 # WimApply the selected version of Windows to the Partition
 
 echo "Applying Windows Image... (This may take a while)"
 wimapply "$wim_path" "$edition_index" ${drive_path}2
-echo "Done! It should in theory boot right up now!"
+echo "Setting up Bootloader..."
+mkdir -p /tmp/mnt/windows
+mkdir -p /tmp/mnt/efi
+mount "$drive_path"1 /tmp/mnt/efi
+mount "$drive_path"2 /tmp/mnt/windows
+
+# Lets start by making the directory structure on the EFI partition
+mkdir -p /tmp/mnt/efi/EFI/Microsoft/Boot
+mkdir -p /tmp/mnt/efi/EFI/Boot
+
+# Copy over the Bootloader
+cp -rv /tmp/mnt/windows/Windows/Boot/EFI/ /tmp/mnt/efi/EFI/Microsoft/Boot
+cp /tmp/mnt/windows/Windows/Boot/EFI/bootmgr.efi /tmp/mnt/efi/EFI/Boot/bootx64.efi
+
