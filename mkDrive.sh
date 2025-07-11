@@ -96,3 +96,6 @@ mkdir -p /tmp/mnt/efi/EFI/Boot
 cp -rv /tmp/mnt/windows/Windows/Boot/EFI/ /tmp/mnt/efi/EFI/Microsoft/Boot
 cp /tmp/mnt/windows/Windows/Boot/EFI/bootmgr.efi /tmp/mnt/efi/EFI/Boot/bootx64.efi
 
+cp ./BCD /tmp/mnt/efi/EFI/Microsoft/Boot/BCD
+
+#Continue after https://github.com/garloff/Fix_BCD/issues/1 hopefully.
